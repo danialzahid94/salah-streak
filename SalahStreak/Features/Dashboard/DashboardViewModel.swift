@@ -81,9 +81,12 @@ final class DashboardViewModel {
         self.userStats  = try? statsRepo.fetchOrCreate()
         self.userSettings = try? statsRepo.fetchOrCreateSettings()
 
-        // If no entries yet today, generate them from prayer times
+        // Generate entries on first load; recompute times on subsequent loads
+        // so that changes to calculation method / madhab take effect immediately.
         if dailyLog?.entries.isEmpty == true {
             generateTodayEntries()
+        } else {
+            updateTodayEntryTimes()
         }
 
         rebuildCards()
@@ -110,6 +113,36 @@ final class DashboardViewModel {
 
         // Schedule notifications
         notificationService.schedulePrayerNotifications(for: windows, on: Calendar.current.startOfDay(for: Date()))
+
+        try? modelContext?.save()
+    }
+
+    private func updateTodayEntryTimes() {
+        guard let settings = userSettings, let lat = settings.latitude, let lng = settings.longitude else { return }
+
+        let windows = prayerTimeService.prayerWindows(
+            for: Date(),
+            latitude: lat,
+            longitude: lng,
+            method: settings.calculationMethod,
+            madhab: settings.madhab
+        )
+
+        for entry in dailyLog?.entries ?? [] {
+            if let window = windows.first(where: { $0.prayer == entry.prayer }) {
+                entry.scheduledDate = window.scheduledTime
+                entry.windowStart   = window.start
+                entry.windowEnd     = window.end
+            }
+        }
+
+        // Reschedule notifications for prayers still pending
+        let pendingWindows = windows.filter { window in
+            (dailyLog?.entries.first(where: { $0.prayer == window.prayer })?.status == .pending) ?? false
+        }
+        if !pendingWindows.isEmpty {
+            notificationService.schedulePrayerNotifications(for: pendingWindows, on: Calendar.current.startOfDay(for: Date()))
+        }
 
         try? modelContext?.save()
     }

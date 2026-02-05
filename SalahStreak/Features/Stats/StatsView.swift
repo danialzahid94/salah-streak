@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import Charts
 
 struct StatsView: View {
     @Environment(\.modelContext) private var modelContext
@@ -8,14 +7,13 @@ struct StatsView: View {
     @Query private var allStats: [UserStats]
 
     private var stats: UserStats? { allStats.first }
-    private var weeklyData: [DayStats] { computeWeeklyData() }
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: Theme.spacingLarge) {
                     summaryCards
-                    weeklyChart
+                    weeklyActivityGrid
                     prayerBreakdown
                 }
                 .padding(.horizontal, Theme.spacing)
@@ -38,24 +36,53 @@ struct StatsView: View {
         }
     }
 
-    // MARK: - Weekly Chart
+    // MARK: - Weekly Activity Grid
 
-    private var weeklyChart: some View {
+    private var weeklyActivityGrid: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("This Week")
                 .font(.system(size: 17, weight: .semibold))
 
-            Chart(weeklyData) { day in
-                BarMark(
-                    x: .value("Day", day.label),
-                    y: .value("Prayers", day.count)
-                )
-                .foregroundStyle(day.color)
+            let grid = computeWeeklyGrid()
+            let dayLabels = computeDayLabels()
+
+            // Day-label header row
+            HStack(spacing: 4) {
+                Color.clear.frame(width: 52)
+                ForEach(0..<7, id: \.self) { i in
+                    Text(dayLabels[i])
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity)
+                        .multilineTextAlignment(.center)
+                }
             }
-            .chartYAxis {
-                AxisMarks(values: [0, 1, 2, 3, 4, 5])
+
+            // One row per prayer
+            ForEach(PrayerType.allCases) { prayer in
+                HStack(spacing: 4) {
+                    Text(prayer.displayName)
+                        .font(.system(size: 13))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 52, alignment: .leading)
+
+                    ForEach(0..<7, id: \.self) { dayIndex in
+                        let prayerIdx = PrayerType.allCases.firstIndex(of: prayer) ?? 0
+                        ActivityCell(status: grid[dayIndex][prayerIdx])
+                            .frame(maxWidth: .infinity)
+                            .aspectRatio(1, contentMode: .fit)
+                    }
+                }
             }
-            .frame(height: 160)
+
+            // Legend
+            HStack(spacing: 16) {
+                LegendItem(color: Theme.stateDone,    label: "Done")
+                LegendItem(color: Theme.stateMissed,  label: "Missed")
+                LegendItem(color: Color(.systemGray4), label: "Upcoming")
+                LegendItem(color: Color(.systemGray6), label: "No data")
+            }
+            .padding(.top, 4)
         }
         .padding(Theme.spacing)
         .background(Theme.cardBG)
@@ -90,16 +117,36 @@ struct StatsView: View {
 
     // MARK: - Helpers
 
-    private func computeWeeklyData() -> [DayStats] {
+    /// Returns a 7-element array (Mon→Sun), each containing 5 CellStatus values (one per prayer).
+    private func computeWeeklyGrid() -> [[CellStatus]] {
         let cal = Calendar.current
         let today = cal.startOfDay(for: Date())
-        return (0..<7).reversed().map { offset -> DayStats in
-            let day = cal.date(byAdding: .day, value: -offset, to: today)!
+
+        return (0..<7).map { offset -> [CellStatus] in
+            let day = cal.date(byAdding: .day, value: -(6 - offset), to: today)!
             let log = logs.first { cal.startOfDay(for: $0.date) == day }
-            let count = log?.completedCount ?? 0
-            let label = DateFormatter.dayLabel.string(from: day)
-            let color: Color = count == 5 ? Theme.stateDone : count > 0 ? .orange : Theme.stateMissed
-            return DayStats(label: label, count: count, color: color)
+
+            return PrayerType.allCases.map { prayer -> CellStatus in
+                guard let entry = log?.entries.first(where: { $0.prayer == prayer }) else {
+                    return .noData
+                }
+                switch entry.status {
+                case .done:    return .done
+                case .missed:  return .missed
+                default:       return .upcoming
+                }
+            }
+        }
+    }
+
+    private func computeDayLabels() -> [String] {
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        let fmt = DateFormatter()
+        fmt.dateFormat = "EEE"
+        return (0..<7).map { offset in
+            let day = cal.date(byAdding: .day, value: -(6 - offset), to: today)!
+            return fmt.string(from: day)
         }
     }
 
@@ -112,11 +159,42 @@ struct StatsView: View {
 
 // MARK: - Supporting Types
 
-struct DayStats: Identifiable {
-    let label: String
-    let count: Int
+enum CellStatus {
+    case done, missed, upcoming, noData
+}
+
+private struct ActivityCell: View {
+    let status: CellStatus
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: 6)
+            .fill(cellColor)
+    }
+
+    private var cellColor: Color {
+        switch status {
+        case .done:      return Theme.stateDone
+        case .missed:    return Theme.stateMissed
+        case .upcoming:  return Color(.systemGray4)
+        case .noData:    return Color(.systemGray6)
+        }
+    }
+}
+
+private struct LegendItem: View {
     let color: Color
-    var id: String { label }
+    let label: String
+
+    var body: some View {
+        HStack(spacing: 4) {
+            RoundedRectangle(cornerRadius: 3)
+                .fill(color)
+                .frame(width: 12, height: 12)
+            Text(label)
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
+        }
+    }
 }
 
 private struct StatCard: View {
@@ -142,12 +220,4 @@ private struct StatCard: View {
         .background(Theme.cardBG)
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
     }
-}
-
-private extension DateFormatter {
-    static let dayLabel: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "EEE"
-        return f
-    }()
 }

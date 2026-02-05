@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		6956B75F2F346C5B00483C4F /* Adhan in Frameworks */ = {isa = PBXBuildFile; productRef = 6956B75E2F346C5B00483C4F /* Adhan */; };
-		AA000002AA000002AA00000B /* SalahStreakWidget.widgetextension in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = AA000002AA000002AA000003 /* SalahStreakWidget.widgetextension */; settings = {ATTRIBUTES = (Public, ); }; };
+		AA000002AA000002AA00000B /* SalahStreakWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = AA000002AA000002AA000003 /* SalahStreakWidget.appex */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,7 +35,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				AA000002AA000002AA00000B /* SalahStreakWidget.widgetextension in Embed App Extensions */,
+				AA000002AA000002AA00000B /* SalahStreakWidget.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -46,10 +46,17 @@
 		6957EB102F34622600AC8BF5 /* SalahStreak.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SalahStreak.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6957EB212F34622700AC8BF5 /* SalahStreakTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SalahStreakTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6957EB2B2F34622700AC8BF5 /* SalahStreakUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SalahStreakUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		AA000002AA000002AA000003 /* SalahStreakWidget.widgetextension */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = SalahStreakWidget.widgetextension; path = SalahStreakWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA000002AA000002AA000003 /* SalahStreakWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SalahStreakWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		6956B7632F34EBDE00483C4F /* Exceptions for "SalahStreakWidget" folder in "SalahStreakWidget" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = AA000002AA000002AA000002 /* SalahStreakWidget */;
+		};
 		6957EB332F34622700AC8BF5 /* Exceptions for "SalahStreak" folder in "SalahStreak" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -80,6 +87,9 @@
 		};
 		AA000002AA000002AA000004 /* SalahStreakWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				6956B7632F34EBDE00483C4F /* Exceptions for "SalahStreakWidget" folder in "SalahStreakWidget" target */,
+			);
 			path = SalahStreakWidget;
 			sourceTree = "<group>";
 		};
@@ -133,7 +143,7 @@
 			isa = PBXGroup;
 			children = (
 				6957EB102F34622600AC8BF5 /* SalahStreak.app */,
-				AA000002AA000002AA000003 /* SalahStreakWidget.widgetextension */,
+				AA000002AA000002AA000003 /* SalahStreakWidget.appex */,
 				6957EB212F34622700AC8BF5 /* SalahStreakTests.xctest */,
 				6957EB2B2F34622700AC8BF5 /* SalahStreakUITests.xctest */,
 			);
@@ -232,7 +242,7 @@
 			packageProductDependencies = (
 			);
 			productName = SalahStreakWidget;
-			productReference = AA000002AA000002AA000003 /* SalahStreakWidget.widgetextension */;
+			productReference = AA000002AA000002AA000003 /* SalahStreakWidget.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
@@ -645,6 +655,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = AYEH6C5B8A;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SalahStreakWidget/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.danial.SalahStreak.widget;
@@ -667,6 +678,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = AYEH6C5B8A;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SalahStreakWidget/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.danial.SalahStreak.widget;

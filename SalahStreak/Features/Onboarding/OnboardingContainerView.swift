@@ -26,7 +26,9 @@ struct OnboardingContainerView: View {
                     MadhabSelectionView(onNext: { _ in currentStep = 2 })
                 default:
                     GoalSelectionView(onFinish: { notificationsEnabled in
-                        finishOnboarding(notificationsEnabled: notificationsEnabled)
+                        Task {
+                            await self.finishOnboarding(notificationsEnabled: notificationsEnabled)
+                        }
                     })
                 }
             }
@@ -34,18 +36,24 @@ struct OnboardingContainerView: View {
         }
     }
 
-    private func finishOnboarding(notificationsEnabled: Bool) {
+    @MainActor
+    private func finishOnboarding(notificationsEnabled: Bool) async {
         let statsRepo    = UserStatsRepository(context: modelContext)
         let stats        = try? statsRepo.fetchOrCreate()
         stats?.hasCompletedOnboarding = true
 
-        let settingsRepo = statsRepo
-        let settings     = try? settingsRepo.fetchOrCreateSettings()
+        let settings     = try? statsRepo.fetchOrCreateSettings()
         settings?.notificationsEnabled = notificationsEnabled
+
+        if notificationsEnabled {
+            _ = await DependencyContainer.shared.notificationService.requestAuthorization()
+        }
 
         if let loc = location {
             settings?.latitude  = loc.latitude
             settings?.longitude = loc.longitude
+            let cityName = await DependencyContainer.shared.locationService.getCityName(for: loc)
+            settings?.cityName = cityName
         }
 
         try? modelContext.save()

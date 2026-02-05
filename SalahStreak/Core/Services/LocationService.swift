@@ -40,4 +40,19 @@ final class LocationService: NSObject, LocationServiceProtocol, CLLocationManage
         continuation?.resume(throwing: error)
         continuation = nil
     }
+
+    // MARK: - Reverse geocoding
+
+    func getCityName(for coordinate: Coordinate) async -> String? {
+        let geocoder = CLGeocoder()
+        let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
+        return await withCheckedContinuation { continuation in
+            geocoder.reverseGeocodeLocation(location) { placemarks, _ in
+                let city = placemarks?.first?.addressDictionary?["City"] as? String
+                    ?? placemarks?.first?.addressDictionary?["Municipality"] as? String
+                    ?? placemarks?.first?.addressDictionary?["SubAdministrativeArea"] as? String
+                continuation.resume(returning: city)
+            }
+        }
+    }
 }
