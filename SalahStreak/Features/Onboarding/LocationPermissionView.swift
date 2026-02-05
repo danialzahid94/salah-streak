@@ -32,22 +32,28 @@ struct LocationPermissionView: View {
             }
 
             VStack(spacing: 12) {
-                Button("Allow Location") {
+                Button {
                     requestLocation()
+                } label: {
+                    Text("Allow Location")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.vertical, 14)
+                        .frame(width: 260)
+                        .background(Theme.accent)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
-                .font(.system(size: 16, weight: .semibold))
-                .padding(.vertical, 14)
-                .frame(width: 260)
-                .background(Theme.accent)
-                .foregroundStyle(.white)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .buttonStyle(.plain)
                 .disabled(isLoading)
 
-                Button("Enter City Manually") {
+                Button {
                     onNext(nil)
+                } label: {
+                    Text("Enter City Manually")
+                        .font(.system(size: 15))
+                        .foregroundStyle(.secondary)
                 }
-                .font(.system(size: 15))
-                .foregroundStyle(.secondary)
+                .buttonStyle(.plain)
             }
 
             Spacer()

@@ -28,13 +28,18 @@ struct GoalSelectionView: View {
                 .background(Theme.cardBG)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
 
-            Button("Get Started") { onFinish(notificationsEnabled) }
-                .font(.system(size: 16, weight: .semibold))
-                .padding(.vertical, 14)
-                .frame(width: 260)
-                .background(Theme.accent)
-                .foregroundStyle(.white)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+            Button {
+                onFinish(notificationsEnabled)
+            } label: {
+                Text("Get Started")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .padding(.vertical, 14)
+                    .frame(width: 260)
+                    .background(Theme.accent)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
 
             Spacer()
         }

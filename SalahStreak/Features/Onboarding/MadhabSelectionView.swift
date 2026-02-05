@@ -30,13 +30,18 @@ struct MadhabSelectionView: View {
                 }
             }
 
-            Button("Continue") { onNext(selected) }
-                .font(.system(size: 16, weight: .semibold))
-                .padding(.vertical, 14)
-                .frame(width: 260)
-                .background(Theme.accent)
-                .foregroundStyle(.white)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+            Button {
+                onNext(selected)
+            } label: {
+                Text("Continue")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .padding(.vertical, 14)
+                    .frame(width: 260)
+                    .background(Theme.accent)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
 
             Spacer()
         }
@@ -69,7 +74,9 @@ private struct MadhabOption: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(isSelected ? Theme.accent : Color.clear, lineWidth: 1.5)
         )
-        .contentShape(.rect)
-        .onTapGesture(perform: onTap)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onTap()
+        }
     }
 }
