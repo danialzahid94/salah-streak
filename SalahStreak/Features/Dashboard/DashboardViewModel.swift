@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import SwiftData
+import WidgetKit
 
 @Observable
 final class DashboardViewModel {
@@ -64,6 +65,7 @@ final class DashboardViewModel {
         }
 
         try? modelContext?.save()
+        syncWidgetData()
         rebuildCards()
     }
 
@@ -143,6 +145,23 @@ final class DashboardViewModel {
     private func stopTimer() {
         timer?.invalidate()
         timer = nil
+    }
+
+    private func syncWidgetData() {
+        let entries = (dailyLog?.entries ?? []).sorted { $0.scheduledDate < $1.scheduledDate }.map {
+            WidgetPrayerData.WidgetPrayerEntry(
+                prayer: $0.prayer.rawValue,
+                status: $0.status.rawValue,
+                scheduledTime: $0.scheduledDate,
+                windowEnd: $0.windowEnd
+            )
+        }
+        WidgetPrayerData.shared = WidgetPrayerData(
+            prayers: entries,
+            currentStreak: userStats?.currentStreak ?? 0,
+            updatedAt: Date()
+        )
+        WidgetCenter.shared.reloadAllTimelines()
     }
 }
 

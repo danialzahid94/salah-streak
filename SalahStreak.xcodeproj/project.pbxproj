@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		AA000002AA000002AA00000B /* SalahStreakWidget.widgetextension in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = AA000002AA000002AA000003 /* SalahStreakWidget.widgetextension */; settings = {ATTRIBUTES = (Public, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		6957EB222F34622700AC8BF5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -21,12 +25,20 @@
 			remoteGlobalIDString = 6957EB0F2F34622600AC8BF5;
 			remoteInfo = SalahStreak;
 		};
+		AA000001AA000001AA000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6957EB082F34622600AC8BF5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA000002AA000002AA000002;
+			remoteInfo = SalahStreakWidget;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		6957EB102F34622600AC8BF5 /* SalahStreak.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SalahStreak.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6957EB212F34622700AC8BF5 /* SalahStreakTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SalahStreakTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6957EB2B2F34622700AC8BF5 /* SalahStreakUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SalahStreakUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA000002AA000002AA000003 /* SalahStreakWidget.widgetextension */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SalahStreakWidget.widgetextension; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -36,6 +48,13 @@
 				Info.plist,
 			);
 			target = 6957EB0F2F34622600AC8BF5 /* SalahStreak */;
+		};
+		AA000002AA000002AA000005 /* Exceptions for "SalahStreakWidget" folder in "SalahStreakWidget" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				SalahStreakWidget.entitlements,
+			);
+			target = AA000002AA000002AA000002 /* SalahStreakWidget */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -56,6 +75,14 @@
 		6957EB2E2F34622700AC8BF5 /* SalahStreakUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = SalahStreakUITests;
+			sourceTree = "<group>";
+		};
+		AA000002AA000002AA000004 /* SalahStreakWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AA000002AA000002AA000005 /* Exceptions for "SalahStreakWidget" folder in "SalahStreakWidget" target */,
+			);
+			path = SalahStreakWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -82,6 +109,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AA000002AA000002AA000006 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -89,6 +123,7 @@
 			isa = PBXGroup;
 			children = (
 				6957EB122F34622600AC8BF5 /* SalahStreak */,
+				AA000002AA000002AA000004 /* SalahStreakWidget */,
 				6957EB242F34622700AC8BF5 /* SalahStreakTests */,
 				6957EB2E2F34622700AC8BF5 /* SalahStreakUITests */,
 				6957EB112F34622600AC8BF5 /* Products */,
@@ -99,6 +134,7 @@
 			isa = PBXGroup;
 			children = (
 				6957EB102F34622600AC8BF5 /* SalahStreak.app */,
+				AA000002AA000002AA000003 /* SalahStreakWidget.widgetextension */,
 				6957EB212F34622700AC8BF5 /* SalahStreakTests.xctest */,
 				6957EB2B2F34622700AC8BF5 /* SalahStreakUITests.xctest */,
 			);
@@ -115,6 +151,7 @@
 				6957EB0C2F34622600AC8BF5 /* Sources */,
 				6957EB0D2F34622600AC8BF5 /* Frameworks */,
 				6957EB0E2F34622600AC8BF5 /* Resources */,
+				AA000002AA000002AA000008 /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
@@ -176,6 +213,28 @@
 			productReference = 6957EB2B2F34622700AC8BF5 /* SalahStreakUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		AA000002AA000002AA000002 /* SalahStreakWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA000002AA000002AA000009 /* Build configuration list for PBXNativeTarget "SalahStreakWidget" */;
+			buildPhases = (
+				AA000002AA000002AA000007 /* Sources */,
+				AA000002AA000002AA000006 /* Frameworks */,
+				AA000002AA000002AA00000A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				AA000002AA000002AA000004 /* SalahStreakWidget */,
+			);
+			name = SalahStreakWidget;
+			packageProductDependencies = (
+			);
+			productName = SalahStreakWidget;
+			productReference = AA000002AA000002AA000003 /* SalahStreakWidget.widgetextension */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -197,6 +256,9 @@
 						CreatedOnToolsVersion = 26.2;
 						TestTargetID = 6957EB0F2F34622600AC8BF5;
 					};
+					AA000002AA000002AA000002 = {
+						CreatedOnToolsVersion = 26.2;
+					};
 				};
 			};
 			buildConfigurationList = 6957EB0B2F34622600AC8BF5 /* Build configuration list for PBXProject "SalahStreak" */;
@@ -214,6 +276,7 @@
 			projectRoot = "";
 			targets = (
 				6957EB0F2F34622600AC8BF5 /* SalahStreak */,
+				AA000002AA000002AA000002 /* SalahStreakWidget */,
 				6957EB202F34622700AC8BF5 /* SalahStreakTests */,
 				6957EB2A2F34622700AC8BF5 /* SalahStreakUITests */,
 			);
@@ -236,6 +299,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		6957EB292F34622700AC8BF5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA000002AA000002AA00000A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -266,7 +336,28 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AA000002AA000002AA000007 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		AA000002AA000002AA000008 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				AA000002AA000002AA00000B /* SalahStreakWidget.widgetextension in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
 		6957EB232F34622700AC8BF5 /* PBXTargetDependency */ = {
@@ -555,6 +646,50 @@
 			};
 			name = Release;
 		};
+		AA000002AA000002AA00000C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = SalahStreakWidget/SalahStreakWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = AYEH6C5B8A;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.danial.SalahStreak.widget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AA000002AA000002AA00000D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = SalahStreakWidget/SalahStreakWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = AYEH6C5B8A;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.danial.SalahStreak.widget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -590,6 +725,15 @@
 			buildConfigurations = (
 				6957EB3D2F34622700AC8BF5 /* Debug */,
 				6957EB3E2F34622700AC8BF5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA000002AA000002AA000009 /* Build configuration list for PBXNativeTarget "SalahStreakWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA000002AA000002AA00000C /* Debug */,
+				AA000002AA000002AA00000D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
