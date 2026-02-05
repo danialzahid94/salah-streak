@@ -1,6 +1,10 @@
 import Foundation
 import CoreLocation
 
+enum LocationError: Error {
+    case timeout
+}
+
 final class LocationService: NSObject, LocationServiceProtocol, CLLocationManagerDelegate {
     private let manager = CLLocationManager()
     private var continuation: CheckedContinuation<Coordinate, Error>?
@@ -23,6 +27,13 @@ final class LocationService: NSObject, LocationServiceProtocol, CLLocationManage
             manager.delegate = self
             manager.desiredAccuracy = kCLLocationAccuracyBest
             manager.startUpdatingLocation()
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 10) { [weak self] in
+                guard let self = self, self.continuation != nil else { return }
+                self.manager.stopUpdatingLocation()
+                self.continuation?.resume(throwing: LocationError.timeout)
+                self.continuation = nil
+            }
         }
     }
 

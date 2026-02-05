@@ -18,6 +18,8 @@ final class DashboardViewModel {
     private var modelContext: ModelContext?
     private var timer: Timer?
 
+    private static var hasRefreshedLocationThisLaunch = false
+
     private let prayerTimeService  = DependencyContainer.shared.prayerTimeService
     private let notificationService = DependencyContainer.shared.notificationService
     private let streakService      = DependencyContainer.shared.streakService
@@ -29,6 +31,13 @@ final class DashboardViewModel {
         self.modelContext = context
         loadData()
         startTimer()
+
+        if !DashboardViewModel.hasRefreshedLocationThisLaunch {
+            DashboardViewModel.hasRefreshedLocationThisLaunch = true
+            Task { [weak self] in
+                await self?.refreshLocationIfNeeded()
+            }
+        }
     }
 
     func onDisappear() {
@@ -195,6 +204,38 @@ final class DashboardViewModel {
             updatedAt: Date()
         )
         WidgetCenter.shared.reloadAllTimelines()
+    }
+
+    @MainActor
+    private func refreshLocationIfNeeded() async {
+        let locationSvc = DependencyContainer.shared.locationService
+
+        if locationSvc.authorizationStatus == .granted {
+            do {
+                let coord = try await locationSvc.requestLocation()
+                userSettings?.latitude  = coord.latitude
+                userSettings?.longitude = coord.longitude
+
+                if userSettings?.cityName == nil {
+                    userSettings?.cityName = await locationSvc.getCityName(for: coord)
+                }
+
+                try? modelContext?.save()
+                loadData()
+                syncWidgetData()
+                return
+            } catch {
+                // Location request timed out — fall through to geocoding retry
+            }
+        }
+
+        // Retry geocoding with existing coordinates if city is still nil
+        if userSettings?.cityName == nil,
+           let lat = userSettings?.latitude,
+           let lng = userSettings?.longitude {
+            userSettings?.cityName = await locationSvc.getCityName(for: Coordinate(latitude: lat, longitude: lng))
+            try? modelContext?.save()
+        }
     }
 }
 

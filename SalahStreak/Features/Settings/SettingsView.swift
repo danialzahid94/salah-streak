@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UserNotifications
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
@@ -7,8 +8,9 @@ struct SettingsView: View {
 
     private var settings: UserSettings? { allSettings.first }
 
-    @State private var showCalculationPicker = false
-    @State private var showMadhabPicker      = false
+    @State private var showCalculationPicker   = false
+    @State private var showMadhabPicker        = false
+    @State private var notificationToggleIsOn  = false
 
     var body: some View {
         NavigationStack {
@@ -43,10 +45,15 @@ struct SettingsView: View {
                 }
 
                 Section("Notifications") {
-                    Toggle("Enabled", isOn: Binding(
-                        get: { settings?.notificationsEnabled ?? true },
-                        set: { settings?.notificationsEnabled = $0; try? modelContext.save() }
-                    ))
+                    Toggle("Enabled", isOn: $notificationToggleIsOn)
+                        .onChange(of: notificationToggleIsOn) { _, newValue in
+                            if newValue {
+                                Task { await self.handleEnableNotifications() }
+                            } else {
+                                settings?.notificationsEnabled = false
+                                try? modelContext.save()
+                            }
+                        }
                 }
 
                 Section("About") {
@@ -72,6 +79,41 @@ struct SettingsView: View {
                     try? modelContext.save()
                 }
             }
+        }
+        .onAppear { Task { await loadNotificationToggleState() } }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+            Task { await self.loadNotificationToggleState() }
+        }
+    }
+
+    // MARK: - Notification Helpers
+
+    @MainActor
+    private func loadNotificationToggleState() async {
+        let status = await UNUserNotificationCenter.current().notificationSettings()
+        notificationToggleIsOn = (settings?.notificationsEnabled == true) && (status.authorizationStatus == .authorized)
+    }
+
+    @MainActor
+    private func handleEnableNotifications() async {
+        let current = await UNUserNotificationCenter.current().notificationSettings()
+        switch current.authorizationStatus {
+        case .notDetermined:
+            let granted = await DependencyContainer.shared.notificationService.requestAuthorization()
+            if granted {
+                settings?.notificationsEnabled = true
+                try? modelContext.save()
+            } else {
+                notificationToggleIsOn = false
+            }
+        case .denied:
+            notificationToggleIsOn = false
+            _ = await UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+        case .authorized, .provisional, .ephemeral:
+            settings?.notificationsEnabled = true
+            try? modelContext.save()
+        @unknown default:
+            notificationToggleIsOn = false
         }
     }
 
