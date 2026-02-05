@@ -9,4 +9,6 @@ final class UserStats {
     var totalPrayers: Int = 0
     var badgesUnlocked: [String] = []
     var hasCompletedOnboarding: Bool = false
+
+    init() {}
 }

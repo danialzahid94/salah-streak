@@ -57,7 +57,7 @@ final class NotificationService: NotificationServiceProtocol {
     func cancelNotifications(for prayer: PrayerType, on date: Date) {
         let dateString = DateFormatter.shared.string(from: date)
         let identifiers = (0..<4).map { "\(prayer.rawValue)_\(dateString)_\($0)" }
-        center.removePendingUNNotificationRequests(withIdentifiers: identifiers)
+        center.removePendingNotificationRequests(withIdentifiers: identifiers)
         center.removeDeliveredNotifications(withIdentifiers: identifiers)
     }
 

@@ -10,16 +10,16 @@ final class PrayerTimeService: PrayerTimeServiceProtocol {
         params.madhab = madhab == .hanafi ? .hanafi : .shafi
 
         let dateComponents = Calendar.current.dateComponents([.year, .month, .day], from: date)
-        guard let prayerTimes = PrayerTimes(coordinates: coordinates, date: dateComponents, parameters: params) else {
+        guard let prayerTimes = PrayerTimes(coordinates: coordinates, date: dateComponents, calculationParameters: params) else {
             return []
         }
 
         // Compute next day's fajr for isha window end
         let nextDay = Calendar.current.date(byAdding: .day, value: 1, to: date)!
         let nextDateComponents = Calendar.current.dateComponents([.year, .month, .day], from: nextDay)
-        let nextPrayerTimes = PrayerTimes(coordinates: coordinates, date: nextDateComponents, parameters: params)
+        let nextPrayerTimes = PrayerTimes(coordinates: coordinates, date: nextDateComponents, calculationParameters: params)
 
-        let ishaEnd = nextPrayerTimes?.fajr ?? Calendar.current.date(byAdding: .hours, value: 6, to: prayerTimes.isha)!
+        let ishaEnd = nextPrayerTimes?.fajr ?? Calendar.current.date(byAdding: .hour, value: 6, to: prayerTimes.isha)!
 
         return [
             PrayerWindow(prayer: .fajr,    start: prayerTimes.fajr,    end: prayerTimes.sunrise,  scheduledTime: prayerTimes.fajr),
@@ -34,11 +34,11 @@ final class PrayerTimeService: PrayerTimeServiceProtocol {
 private extension CalculationMethodType {
     var adhanParameters: CalculationParameters {
         switch self {
-        case .muslimWorldLeague:      return CalculationMethod.muslimWorldLeague.getParameters()
-        case .egyptian:               return CalculationMethod.egyptian.getParameters()
-        case .umMalaysia:             return CalculationMethod.umMalaysia.getParameters()
-        case .northAmerica:           return CalculationMethod.northAmerica.getParameters()
-        case .muslim_league_of_india: return CalculationMethod.muslim_league_of_india.getParameters()
+        case .muslimWorldLeague:      return CalculationMethod.muslimWorldLeague.params
+        case .egyptian:               return CalculationMethod.egyptian.params
+        case .umMalaysia:             return CalculationMethod.singapore.params
+        case .northAmerica:           return CalculationMethod.northAmerica.params
+        case .muslim_league_of_india: return CalculationMethod.karachi.params
         }
     }
 }

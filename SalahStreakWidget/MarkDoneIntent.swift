@@ -1,16 +1,24 @@
 import AppIntents
+import SwiftUI
 import WidgetKit
-import Foundation
 
 /// Interactive widget intent to mark a prayer as done directly from the widget.
 struct MarkDoneIntent: AppIntent {
-    static var title = LocalizedStringKey("Mark Prayer Done")
+    static var title: LocalizedStringResource = "Mark Prayer Done"
 
     @Parameter(title: "Prayer")
     var prayer: String
 
-    func perform() async throws -> some IntentResult {
-        guard var data = WidgetPrayerData.shared else { return }
+    init() {}
+
+    init(prayer: String) {
+        self.prayer = prayer
+    }
+
+    func perform() async throws -> some IntentResult & ProvidesDialog {
+        guard let data = WidgetPrayerData.shared else {
+            return .result(dialog: "No prayer data available")
+        }
 
         var updated = data.prayers
         if let idx = updated.firstIndex(where: { $0.prayer == prayer && $0.status == "pending" }) {
@@ -29,11 +37,6 @@ struct MarkDoneIntent: AppIntent {
         )
 
         WidgetCenter.shared.reloadAllTimelines()
-        return
+        return .result(dialog: "\(prayer.capitalized) prayer marked as done")
     }
-}
-
-struct SalahStreakWidgetConfiguration: WidgetConfigurationIntent {
-    static var title = LocalizedStringKey("SalahStreak Widget")
-    static var description = IntentDescription("Shows your prayer status and streak.")
 }

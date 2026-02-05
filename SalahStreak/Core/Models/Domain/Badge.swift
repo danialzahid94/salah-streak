@@ -1,6 +1,6 @@
 import Foundation
 
-struct Badge: Identifiable, Codable {
+struct Badge: Identifiable, Codable, Equatable {
     let id: String
     let title: String
     let description: String

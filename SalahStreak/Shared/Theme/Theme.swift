@@ -3,7 +3,7 @@ import SwiftUI
 enum Theme {
     // MARK: - Colors
     static let accent       = Color("AccentColor")
-    static let background   = Color.background
+    static let background   = Color(.systemBackground)
     static let cardBG       = Color.secondary.opacity(0.12)
 
     static let stateDone    = Color.green

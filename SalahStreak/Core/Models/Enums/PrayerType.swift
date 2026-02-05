@@ -1,6 +1,7 @@
 import Foundation
 
-enum PrayerType: String, Codable, CaseIterable {
+enum PrayerType: String, Codable, CaseIterable, Identifiable {
+    var id: String { rawValue }
     case fajr, dhuhr, asr, maghrib, isha
 
     var displayName: String { rawValue.capitalized }

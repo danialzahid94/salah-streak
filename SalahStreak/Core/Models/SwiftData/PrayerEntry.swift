@@ -9,8 +9,8 @@ final class PrayerEntry {
     var windowStart: Date
     var windowEnd: Date
     var performedAt: Date?
-    var status: PrayerStatus = .pending
-    var source: EntrySource = .app
+    var status: PrayerStatus = PrayerStatus.pending
+    var source: EntrySource = EntrySource.app
     var latitude: Double?
     var longitude: Double?
 

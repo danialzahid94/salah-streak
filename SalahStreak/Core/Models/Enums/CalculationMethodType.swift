@@ -1,6 +1,7 @@
 import Foundation
 
-enum CalculationMethodType: String, Codable, CaseIterable {
+enum CalculationMethodType: String, Codable, CaseIterable, Identifiable {
+    var id: String { rawValue }
     case muslimWorldLeague
     case egyptian
     case umMalaysia

@@ -1,7 +1,7 @@
 import Foundation
 import CoreLocation
 
-final class LocationService: LocationServiceProtocol, CLLocationManagerDelegate {
+final class LocationService: NSObject, LocationServiceProtocol, CLLocationManagerDelegate {
     private let manager = CLLocationManager()
     private var continuation: CheckedContinuation<Coordinate, Error>?
 

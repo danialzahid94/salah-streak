@@ -1,15 +1,24 @@
 import SwiftUI
 import WidgetKit
+import AppIntents
 
 struct SalahStreakWidgetEntryView: View {
     var entry: SalahStreakWidgetEntry
     @Environment(\.widgetFamily) var family
 
     var body: some View {
+        content
+            .containerBackground(Color(.systemBackground), for: .widget)
+    }
+
+    @ViewBuilder
+    private var content: some View {
         switch family {
-        case .systemSmall:  SmallWidgetView(data: entry.prayerData)
-        case .systemMedium: MediumWidgetView(data: entry.prayerData)
-        default:            SmallWidgetView(data: entry.prayerData)
+        case .systemSmall:       SmallWidgetView(data: entry.prayerData)
+        case .systemMedium:      MediumWidgetView(data: entry.prayerData)
+        case .accessoryCircular: CircularProgressWidget(data: entry.prayerData)
+        case .accessoryInline:   InlinePrayerWidget(data: entry.prayerData)
+        default:                 SmallWidgetView(data: entry.prayerData)
         }
     }
 }
@@ -22,11 +31,19 @@ private struct SmallWidgetView: View {
     var body: some View {
         VStack(spacing: 8) {
             if let current = data?.currentPrayer {
-                Text(current.prayer.capitalized)
-                    .font(.system(size: 20, weight: .bold))
-                Text("ends \(timeString(until: current.windowEnd))")
-                    .font(.system(size: 13))
-                    .foregroundStyle(.secondary)
+                Button(intent: MarkDoneIntent(prayer: current.prayer)) {
+                    VStack(spacing: 2) {
+                        Text(current.prayer.capitalized)
+                            .font(.system(size: 20, weight: .bold))
+                        Text("ends \(timeString(until: current.windowEnd))")
+                            .font(.system(size: 13))
+                            .foregroundStyle(.secondary)
+                        Text("Tap to mark done")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.blue)
+                    }
+                }
+                .buttonStyle(.plain)
             } else {
                 Text("All Done")
                     .font(.system(size: 18, weight: .bold))
@@ -51,9 +68,6 @@ private struct SmallWidgetView: View {
             }
         }
         .padding()
-        .containerBackground(.for(.widget)) {
-            Color.background
-        }
     }
 }
 
@@ -79,34 +93,40 @@ private struct MediumWidgetView: View {
 
             Divider()
 
-            // Right: prayer list
-            VStack(alignment: .leading, spacing: 6) {
+            // Right: prayer list — each row is tappable via intent
+            VStack(alignment: .leading, spacing: 4) {
                 ForEach(data?.prayers ?? [], id: \.prayer) { p in
-                    HStack(spacing: 10) {
-                        Circle()
-                            .fill(statusColor(p.status))
-                            .frame(width: 10, height: 10)
-                        Text(p.prayer.capitalized)
-                            .font(.system(size: 14, weight: .medium))
-                        Spacer()
-                        Text(shortTime(p.scheduledTime))
-                            .font(.system(size: 13))
-                            .foregroundStyle(.secondary)
+                    Button(intent: MarkDoneIntent(prayer: p.prayer)) {
+                        HStack(spacing: 10) {
+                            Circle()
+                                .fill(statusColor(p.status))
+                                .frame(width: 10, height: 10)
+                            Text(p.prayer.capitalized)
+                                .font(.system(size: 14, weight: .medium))
+                            Spacer()
+                            if p.status == "done" {
+                                Image(systemName: "checkmark")
+                                    .foregroundStyle(.green)
+                                    .font(.system(size: 12))
+                            } else {
+                                Text(shortTime(p.scheduledTime))
+                                    .font(.system(size: 13))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                     }
+                    .buttonStyle(.plain)
                 }
             }
             .padding(.leading, 14)
         }
         .padding()
-        .containerBackground(.for(.widget)) {
-            Color.background
-        }
     }
 }
 
-// MARK: - Lock Screen Widgets (Inline & Circular)
+// MARK: - Lock Screen Widgets
 
-struct InlinePrayerWidget: View {
+private struct InlinePrayerWidget: View {
     let data: WidgetPrayerData?
 
     var body: some View {
@@ -118,7 +138,7 @@ struct InlinePrayerWidget: View {
     }
 }
 
-struct CircularProgressWidget: View {
+private struct CircularProgressWidget: View {
     let data: WidgetPrayerData?
 
     private var progress: Double { Double(data?.completedCount ?? 0) / 5.0 }

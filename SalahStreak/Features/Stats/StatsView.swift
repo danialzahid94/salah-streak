@@ -4,7 +4,7 @@ import Charts
 
 struct StatsView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \.date) private var logs: [DailyLog]
+    @Query(sort: \DailyLog.date) private var logs: [DailyLog]
     @Query private var allStats: [UserStats]
 
     private var stats: UserStats? { allStats.first }

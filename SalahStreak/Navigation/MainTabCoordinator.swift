@@ -30,6 +30,6 @@ final class MainTabCoordinator {
     }
 
     func popToRoot() {
-        currentPath.wrappedValue.removeAll()
+        currentPath.wrappedValue = NavigationPath()
     }
 }

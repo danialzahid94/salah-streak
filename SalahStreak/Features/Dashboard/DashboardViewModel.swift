@@ -137,7 +137,7 @@ final class DashboardViewModel {
     }
 
     private func startTimer() {
-        timer = Timer.scheduledTimer(withTimeInterval: 60) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
             self?.rebuildCards()
         }
     }
