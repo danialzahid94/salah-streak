@@ -50,29 +50,50 @@ final class DashboardViewModel {
     func markPrayerDone(_ cardIndex: Int) {
         guard cardIndex < prayerCards.count else { return }
         let card = prayerCards[cardIndex]
-        guard card.state != .done else { return }
 
-        // Update the entry
+        // Tap on a done prayer → undo it
+        if card.state == .done {
+            undoMarkDone(card.prayer)
+            return
+        }
+
+        // Only allow marking done while the prayer window is open
+        guard card.state == .active || card.state == .warning else { return }
+
         if let entry = dailyLog?.entries.first(where: { $0.prayer == card.prayer }) {
             entry.status = .done
             entry.performedAt = Date()
             entry.source = .app
 
-            // Cancel remaining notifications for this prayer
             notificationService.cancelNotifications(for: card.prayer, on: Calendar.current.startOfDay(for: Date()))
-
-            // Haptic
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         }
 
-        // Update stats
         userStats?.totalPrayers += 1
 
-        // Check badges
         if let stats = userStats, let log = dailyLog {
             newBadges = badgeService.checkAndAwardBadges(stats: stats, dailyLog: log)
         }
 
+        try? modelContext?.save()
+        syncWidgetData()
+        rebuildCards()
+    }
+
+    private func undoMarkDone(_ prayer: PrayerType) {
+        guard let entry = dailyLog?.entries.first(where: { $0.prayer == prayer }) else { return }
+
+        entry.status = .pending
+        entry.performedAt = nil
+        userStats?.totalPrayers -= 1
+
+        // Reschedule notifications if still within the prayer window
+        if entry.windowEnd > Date() {
+            let window = PrayerWindow(prayer: prayer, start: entry.windowStart, end: entry.windowEnd, scheduledTime: entry.scheduledDate)
+            notificationService.schedulePrayerNotifications(for: [window], on: Calendar.current.startOfDay(for: Date()))
+        }
+
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         try? modelContext?.save()
         syncWidgetData()
         rebuildCards()
@@ -216,9 +237,7 @@ final class DashboardViewModel {
                 userSettings?.latitude  = coord.latitude
                 userSettings?.longitude = coord.longitude
 
-                if userSettings?.cityName == nil {
-                    userSettings?.cityName = await locationSvc.getCityName(for: coord)
-                }
+                userSettings?.cityName = await locationSvc.getCityName(for: coord)
 
                 try? modelContext?.save()
                 loadData()
