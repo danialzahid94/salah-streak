@@ -3,47 +3,37 @@ import SwiftData
 
 struct BadgesView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var allStats: [UserStats]
-
-    @State private var selectedBadge: Badge?
-
-    private var badges: [Badge] {
-        guard let stats = allStats.first else { return allBadgeDefinitions.map { badge(from: $0, unlocked: false) } }
-        return allBadgeDefinitions.map { badge(from: $0, unlocked: stats.badgesUnlocked.contains($0.id)) }
-    }
+    @State private var viewModel = BadgesViewModel()
 
     var body: some View {
         NavigationStack {
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: Theme.spacingSmall) {
-                ForEach(badges) { badge in
+                ForEach(viewModel.badges) { badge in
                     BadgeTile(badge: badge)
-                        .onTapGesture { selectedBadge = badge }
+                        .onTapGesture { 
+                            viewModel.selectBadge(badge)
+                        }
                 }
             }
             .padding(Theme.spacing)
             .navigationTitle("Badges")
             .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        viewModel.refresh()
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                }
+            }
         }
-        .sheet(item: $selectedBadge) { badge in
+        .sheet(item: $viewModel.selectedBadge) { badge in
             BadgeDetailView(badge: badge)
         }
-    }
-
-    // MARK: - Helpers
-
-    private static let definitions: [(id: String, title: String, description: String, icon: String)] = [
-        ("first_prayer",  "First Prayer",  "Complete your very first prayer.",             "star"),
-        ("perfect_day",   "Perfect Day",   "Complete all 5 prayers in a single day.",     "checkmark.seal"),
-        ("week_warrior",  "Week Warrior",  "Maintain a 7-day streak.",                    "flame"),
-        ("month_master",  "Month Master",  "Maintain a 30-day streak.",                   "trophy"),
-        ("early_bird",    "Early Bird",    "Complete 10 Fajr prayers on time.",           "sunrise"),
-        ("consistent",    "Consistent",    "Complete 50 total prayers.",                  "heart.fill"),
-    ]
-
-    private var allBadgeDefinitions: [(id: String, title: String, description: String, icon: String)] { Self.definitions }
-
-    private func badge(from def: (id: String, title: String, description: String, icon: String), unlocked: Bool) -> Badge {
-        Badge(id: def.id, title: def.title, description: def.description, icon: def.icon, isUnlocked: unlocked)
+        .onAppear {
+            viewModel.onAppear(context: modelContext)
+        }
     }
 }
 

@@ -4,23 +4,17 @@ import UserNotifications
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var allSettings: [UserSettings]
-
-    private var settings: UserSettings? { allSettings.first }
-
-    @State private var showCalculationPicker   = false
-    @State private var showMadhabPicker        = false
-    @State private var notificationToggleIsOn  = false
+    @State private var viewModel = SettingsViewModel()
 
     var body: some View {
         NavigationStack {
             List {
                 Section("Prayer Times") {
-                    settingRow(title: "Calculation Method", value: settings?.calculationMethod.displayName ?? "—") {
-                        showCalculationPicker = true
+                    settingRow(title: "Calculation Method", value: viewModel.calculationMethod.displayName) {
+                        viewModel.toggleCalculationPicker()
                     }
-                    settingRow(title: "Madhab", value: settings?.madhab.displayName ?? "—") {
-                        showMadhabPicker = true
+                    settingRow(title: "Madhab", value: viewModel.madhab.displayName) {
+                        viewModel.toggleMadhabPicker()
                     }
                 }
 
@@ -28,92 +22,62 @@ struct SettingsView: View {
                     HStack {
                         Text("City")
                         Spacer()
-                        Text(settings?.cityName ?? "Not set")
+                        Text(viewModel.cityName)
                             .foregroundStyle(.secondary)
                     }
                     HStack {
                         Text("Coordinates")
                         Spacer()
-                        if let lat = settings?.latitude, let lng = settings?.longitude {
-                            Text("\(String(format: "%.4f", lat)), \(String(format: "%.4f", lng))")
-                                .foregroundStyle(.secondary)
-                                .font(.system(size: 13))
-                        } else {
-                            Text("Not set").foregroundStyle(.secondary)
-                        }
+                        Text(viewModel.coordinates)
+                            .foregroundStyle(.secondary)
+                            .font(.system(size: 13))
                     }
                 }
 
                 Section("Notifications") {
-                    Toggle("Enabled", isOn: $notificationToggleIsOn)
-                        .onChange(of: notificationToggleIsOn) { _, newValue in
-                            if newValue {
-                                Task { await self.handleEnableNotifications() }
-                            } else {
-                                settings?.notificationsEnabled = false
-                                try? modelContext.save()
+                    Toggle("Enabled", isOn: Binding(
+                        get: { viewModel.notificationsEnabled },
+                        set: { newValue in
+                            Task {
+                                await viewModel.toggleNotifications(newValue)
                             }
                         }
+                    ))
                 }
 
                 Section("About") {
                     HStack {
                         Text("Version")
                         Spacer()
-                        Text("1.0.0").foregroundStyle(.secondary)
+                        Text(viewModel.appVersion).foregroundStyle(.secondary)
                     }
                 }
             }
             .listStyle(.insetGrouped)
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.large)
-            .sheet(isPresented: $showCalculationPicker) {
-                CalculationMethodPickerView(current: settings?.calculationMethod ?? .muslimWorldLeague) { method in
-                    settings?.calculationMethod = method
-                    try? modelContext.save()
-                }
+            .sheet(isPresented: $viewModel.showCalculationPicker) {
+                CalculationMethodPickerView(
+                    current: viewModel.calculationMethod,
+                    onSelect: { method in
+                        viewModel.selectCalculationMethod(method)
+                    }
+                )
             }
-            .sheet(isPresented: $showMadhabPicker) {
-                MadhabPickerView(current: settings?.madhab ?? .shafi) { madhab in
-                    settings?.madhab = madhab
-                    try? modelContext.save()
-                }
+            .sheet(isPresented: $viewModel.showMadhabPicker) {
+                MadhabPickerView(
+                    current: viewModel.madhab,
+                    onSelect: { madhab in
+                        viewModel.selectMadhab(madhab)
+                    }
+                )
             }
         }
-        .onAppear { Task { await loadNotificationToggleState() } }
+        .onAppear {
+            viewModel.onAppear(context: modelContext)
+        }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
-            Task { await self.loadNotificationToggleState() }
-        }
-    }
-
-    // MARK: - Notification Helpers
-
-    @MainActor
-    private func loadNotificationToggleState() async {
-        let status = await UNUserNotificationCenter.current().notificationSettings()
-        notificationToggleIsOn = (settings?.notificationsEnabled == true) && (status.authorizationStatus == .authorized)
-    }
-
-    @MainActor
-    private func handleEnableNotifications() async {
-        let current = await UNUserNotificationCenter.current().notificationSettings()
-        switch current.authorizationStatus {
-        case .notDetermined:
-            let granted = await DependencyContainer.shared.notificationService.requestAuthorization()
-            if granted {
-                settings?.notificationsEnabled = true
-                try? modelContext.save()
-            } else {
-                notificationToggleIsOn = false
-            }
-        case .denied:
-            notificationToggleIsOn = false
-            _ = await UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
-        case .authorized, .provisional, .ephemeral:
-            settings?.notificationsEnabled = true
-            try? modelContext.save()
-        @unknown default:
-            notificationToggleIsOn = false
+            viewModel.onBecomeActive()
         }
     }
 

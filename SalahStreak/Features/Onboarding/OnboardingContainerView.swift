@@ -3,60 +3,42 @@ import SwiftData
 
 struct OnboardingContainerView: View {
     @Environment(\.modelContext) private var modelContext
-    @State private var currentStep = 0
-    @State private var location: Coordinate?
+    @State private var viewModel = OnboardingViewModel()
 
     private let totalSteps = 3
 
     var body: some View {
         VStack(spacing: 0) {
             // Progress bar
-            OnboardingProgressBar(currentStep: currentStep, totalSteps: totalSteps)
+            OnboardingProgressBar(currentStep: viewModel.currentStep, totalSteps: totalSteps)
                 .padding(.top, 12)
                 .padding(.horizontal)
 
             ZStack {
-                switch currentStep {
+                switch viewModel.currentStep {
                 case 0:
                     LocationPermissionView(onNext: { loc in
-                        self.location = loc
-                        currentStep = 1
+                        Task {
+                            await viewModel.handleLocationPermission(coordinate: loc)
+                        }
                     })
                 case 1:
-                    MadhabSelectionView(onNext: { _ in currentStep = 2 })
+                    MadhabSelectionView(onNext: { madhab in
+                        viewModel.handleMadhabSelection(madhab)
+                    })
                 default:
                     GoalSelectionView(onFinish: { notificationsEnabled in
                         Task {
-                            await self.finishOnboarding(notificationsEnabled: notificationsEnabled)
+                            await viewModel.finishOnboarding()
                         }
                     })
                 }
             }
             .frame(maxHeight: .infinity)
         }
-    }
-
-    @MainActor
-    private func finishOnboarding(notificationsEnabled: Bool) async {
-        let statsRepo    = UserStatsRepository(context: modelContext)
-        let stats        = try? statsRepo.fetchOrCreate()
-        stats?.hasCompletedOnboarding = true
-
-        let settings     = try? statsRepo.fetchOrCreateSettings()
-        settings?.notificationsEnabled = notificationsEnabled
-
-        if notificationsEnabled {
-            _ = await DependencyContainer.shared.notificationService.requestAuthorization()
+        .onAppear {
+            viewModel.onAppear(context: modelContext)
         }
-
-        if let loc = location {
-            settings?.latitude  = loc.latitude
-            settings?.longitude = loc.longitude
-            let cityName = await DependencyContainer.shared.locationService.getCityName(for: loc)
-            settings?.cityName = cityName
-        }
-
-        try? modelContext.save()
     }
 }
 

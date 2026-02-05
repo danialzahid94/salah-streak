@@ -3,10 +3,7 @@ import SwiftData
 
 struct StatsView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \DailyLog.date) private var logs: [DailyLog]
-    @Query private var allStats: [UserStats]
-
-    private var stats: UserStats? { allStats.first }
+    @State private var viewModel = StatsViewModel()
 
     var body: some View {
         NavigationStack {
@@ -22,6 +19,18 @@ struct StatsView: View {
             .background(.background)
             .navigationTitle("Stats")
             .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        viewModel.refresh()
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                }
+            }
+        }
+        .onAppear {
+            viewModel.onAppear(context: modelContext)
         }
     }
 
@@ -29,10 +38,10 @@ struct StatsView: View {
 
     private var summaryCards: some View {
         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: Theme.spacingSmall) {
-            StatCard(title: "Current Streak", value: "\(stats?.currentStreak ?? 0)", icon: "flame.fill", color: .orange)
-            StatCard(title: "Best Streak",    value: "\(stats?.bestStreak ?? 0)",    icon: "trophy.fill",  color: .yellow)
-            StatCard(title: "Total Prayers",  value: "\(stats?.totalPrayers ?? 0)",  icon: "heart.fill",   color: .red)
-            StatCard(title: "Freezes",        value: "\(stats?.freezesAvailable ?? 0)", icon: "snowflake", color: .blue)
+            StatCard(title: "Current Streak", value: "\(viewModel.summaryStats.currentStreak)", icon: "flame.fill", color: .orange)
+            StatCard(title: "Best Streak",    value: "\(viewModel.summaryStats.bestStreak)",    icon: "trophy.fill",  color: .yellow)
+            StatCard(title: "Total Prayers",  value: "\(viewModel.summaryStats.totalPrayers)",  icon: "heart.fill",   color: .red)
+            StatCard(title: "Freezes",        value: "\(viewModel.summaryStats.freezesAvailable)", icon: "snowflake", color: .blue)
         }
     }
 
@@ -43,14 +52,11 @@ struct StatsView: View {
             Text("This Week")
                 .font(.system(size: 17, weight: .semibold))
 
-            let grid = computeWeeklyGrid()
-            let dayLabels = computeDayLabels()
-
             // Day-label header row
             HStack(spacing: 4) {
                 Color.clear.frame(width: 52)
                 ForEach(0..<7, id: \.self) { i in
-                    Text(dayLabels[i])
+                    Text(viewModel.dayLabels.indices.contains(i) ? viewModel.dayLabels[i] : "")
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity)
@@ -68,7 +74,10 @@ struct StatsView: View {
 
                     ForEach(0..<7, id: \.self) { dayIndex in
                         let prayerIdx = PrayerType.allCases.firstIndex(of: prayer) ?? 0
-                        ActivityCell(status: grid[dayIndex][prayerIdx])
+                        let status = viewModel.weeklyGrid.indices.contains(dayIndex) && viewModel.weeklyGrid[dayIndex].indices.contains(prayerIdx) 
+                            ? viewModel.weeklyGrid[dayIndex][prayerIdx] 
+                            : .noData
+                        ActivityCell(status: status)
                             .frame(maxWidth: .infinity)
                             .aspectRatio(1, contentMode: .fit)
                     }
@@ -96,15 +105,14 @@ struct StatsView: View {
             Text("Prayer Breakdown")
                 .font(.system(size: 17, weight: .semibold))
 
-            ForEach(PrayerType.allCases) { prayer in
-                let total = prayerCount(for: prayer)
+            ForEach(viewModel.prayerBreakdown) { item in
                 HStack {
-                    Image(systemName: prayer.icon)
+                    Image(systemName: item.prayer.icon)
                         .foregroundStyle(Theme.stateActive)
                         .frame(width: 24)
-                    Text(prayer.displayName)
+                    Text(item.prayer.displayName)
                     Spacer()
-                    Text("\(total)")
+                    Text("\(item.count)")
                         .font(.system(size: 15, weight: .semibold))
                 }
                 .padding(.vertical, 6)
@@ -114,54 +122,9 @@ struct StatsView: View {
         .background(Theme.cardBG)
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
     }
-
-    // MARK: - Helpers
-
-    /// Returns a 7-element array (Mon→Sun), each containing 5 CellStatus values (one per prayer).
-    private func computeWeeklyGrid() -> [[CellStatus]] {
-        let cal = Calendar.current
-        let today = cal.startOfDay(for: Date())
-
-        return (0..<7).map { offset -> [CellStatus] in
-            let day = cal.date(byAdding: .day, value: -(6 - offset), to: today)!
-            let log = logs.first { cal.startOfDay(for: $0.date) == day }
-
-            return PrayerType.allCases.map { prayer -> CellStatus in
-                guard let entry = log?.entries.first(where: { $0.prayer == prayer }) else {
-                    return .noData
-                }
-                switch entry.status {
-                case .done:    return .done
-                case .missed:  return .missed
-                default:       return .upcoming
-                }
-            }
-        }
-    }
-
-    private func computeDayLabels() -> [String] {
-        let cal = Calendar.current
-        let today = cal.startOfDay(for: Date())
-        let fmt = DateFormatter()
-        fmt.dateFormat = "EEE"
-        return (0..<7).map { offset in
-            let day = cal.date(byAdding: .day, value: -(6 - offset), to: today)!
-            return fmt.string(from: day)
-        }
-    }
-
-    private func prayerCount(for prayer: PrayerType) -> Int {
-        logs.reduce(0) { sum, log in
-            sum + log.entries.filter { $0.prayer == prayer && $0.status == .done }.count
-        }
-    }
 }
 
 // MARK: - Supporting Types
-
-enum CellStatus {
-    case done, missed, upcoming, noData
-}
 
 private struct ActivityCell: View {
     let status: CellStatus
