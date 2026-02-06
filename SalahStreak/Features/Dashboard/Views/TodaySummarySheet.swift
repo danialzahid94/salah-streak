@@ -31,6 +31,7 @@ struct TodaySummarySheet: View {
         case .warning: return Theme.stateWarning
         case .missed:  return Theme.stateMissed
         case .future:  return Theme.stateFuture
+        case .qada:     return Theme.stateQada
         }
     }
 
@@ -41,6 +42,7 @@ struct TodaySummarySheet: View {
         case .warning: return "Warning"
         case .missed:  return "Missed"
         case .future:  return "Upcoming"
+        case .qada:     return "Qada"
         }
     }
 }

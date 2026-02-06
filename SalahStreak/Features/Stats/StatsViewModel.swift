@@ -64,7 +64,7 @@ final class StatsViewModel {
             let log = logs.first { cal.startOfDay(for: $0.date) == day }
             
             return PrayerType.allCases.map { prayer -> CellStatus in
-                guard let entry = log?.entries.first(where: { $0.prayer == prayer }) else {
+                guard let entry = log?.safeEntries.first(where: { $0.prayer == prayer }) else {
                     return .noData
                 }
                 switch entry.status {
@@ -92,7 +92,7 @@ final class StatsViewModel {
     private func computePrayerBreakdown() {
         prayerBreakdown = PrayerType.allCases.map { prayer in
             let count = logs.reduce(0) { sum, log in
-                sum + log.entries.filter { $0.prayer == prayer && ($0.status == .done || $0.status == .qada) }.count
+                sum + log.safeEntries.filter { $0.prayer == prayer && ($0.status == .done || $0.status == .qada) }.count
             }
             return PrayerBreakdownItem(prayer: prayer, count: count)
         }

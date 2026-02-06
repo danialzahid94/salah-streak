@@ -137,7 +137,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 
             let logDesc = FetchDescriptor<DailyLog>(predicate: #Predicate { $0.date == today })
             guard let log = try? context.fetch(logDesc).first,
-                  let entry = log.entries.first(where: { $0.prayer == prayer && $0.status == .pending }) else { return }
+                  let entry = log.safeEntries.first(where: { $0.prayer == prayer && $0.status == .pending }) else { return }
 
             entry.status     = .done
             entry.performedAt = Date()

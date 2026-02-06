@@ -75,7 +75,7 @@ final class DashboardViewModel {
         // Only allow marking done while the prayer window is open
         guard card.state == .active || card.state == .warning else { return }
 
-        if let entry = dailyLog?.entries.first(where: { $0.prayer == card.prayer }) {
+        if let entry = dailyLog?.safeEntries.first(where: { $0.prayer == card.prayer }) {
             entry.status = .done
             entry.performedAt = Date()
             entry.source = .app
@@ -100,7 +100,7 @@ final class DashboardViewModel {
         guard cardIndex < prayerCards.count else { return }
         let card = prayerCards[cardIndex]
 
-        if let entry = dailyLog?.entries.first(where: { $0.prayer == card.prayer }) {
+        if let entry = dailyLog?.safeEntries.first(where: { $0.prayer == card.prayer }) {
             entry.status = .qada
             entry.performedAt = Date()
 
@@ -120,7 +120,7 @@ final class DashboardViewModel {
     }
 
     private func undoMarkDone(_ prayer: PrayerType) {
-        guard let entry = dailyLog?.entries.first(where: { $0.prayer == prayer }) else { return }
+        guard let entry = dailyLog?.safeEntries.first(where: { $0.prayer == prayer }) else { return }
 
         entry.status = .pending
         entry.performedAt = nil
@@ -139,7 +139,7 @@ final class DashboardViewModel {
     }
 
     private func undoMarkQada(_ prayer: PrayerType) {
-        guard let entry = dailyLog?.entries.first(where: { $0.prayer == prayer }) else { return }
+        guard let entry = dailyLog?.safeEntries.first(where: { $0.prayer == prayer }) else { return }
 
         entry.status = .missed
         entry.performedAt = nil
@@ -165,7 +165,7 @@ final class DashboardViewModel {
 
         // Generate entries on first load; recompute times on subsequent loads
         // so that changes to calculation method / madhab take effect immediately.
-        if dailyLog?.entries.isEmpty == true {
+        if dailyLog?.safeEntries.isEmpty == true {
             generateTodayEntries()
         } else {
             updateTodayEntryTimes()
@@ -189,7 +189,7 @@ final class DashboardViewModel {
         for w in windows {
             let entry = PrayerEntry(prayer: w.prayer, scheduledDate: w.scheduledTime, windowStart: w.start, windowEnd: w.end)
             entry.dailyLog = dailyLog
-            dailyLog?.entries.append(entry)
+            dailyLog?.entries?.append(entry)
             modelContext?.insert(entry)
         }
 
@@ -210,7 +210,7 @@ final class DashboardViewModel {
             madhab: settings.madhab
         )
 
-        for entry in dailyLog?.entries ?? [] {
+        for entry in dailyLog?.safeEntries ?? [] {
             if let window = windows.first(where: { $0.prayer == entry.prayer }) {
                 entry.scheduledDate = window.scheduledTime
                 entry.windowStart   = window.start
@@ -220,7 +220,7 @@ final class DashboardViewModel {
 
         // Reschedule notifications for prayers still pending
         let pendingWindows = windows.filter { window in
-            (dailyLog?.entries.first(where: { $0.prayer == window.prayer })?.status == .pending) ?? false
+            (dailyLog?.safeEntries.first(where: { $0.prayer == window.prayer })?.status == .pending) ?? false
         }
         if !pendingWindows.isEmpty {
             notificationService.schedulePrayerNotifications(for: pendingWindows, on: Calendar.current.startOfDay(for: Date()))
@@ -231,7 +231,7 @@ final class DashboardViewModel {
 
     private func rebuildCards() {
         let now = Date()
-        prayerCards = (dailyLog?.entries ?? []).sorted { $0.scheduledDate < $1.scheduledDate }.map { entry in
+        prayerCards = (dailyLog?.safeEntries ?? []).sorted { $0.scheduledDate < $1.scheduledDate }.map { entry in
             let state: PrayerCardState
             switch entry.status {
             case .done:    state = .done
@@ -264,7 +264,7 @@ final class DashboardViewModel {
     }
 
     private func syncWidgetData() {
-        let entries = (dailyLog?.entries ?? []).sorted { $0.scheduledDate < $1.scheduledDate }.map {
+        let entries = (dailyLog?.safeEntries ?? []).sorted { $0.scheduledDate < $1.scheduledDate }.map {
             WidgetPrayerData.WidgetPrayerEntry(
                 prayer: $0.prayer.rawValue,
                 status: $0.status.rawValue,

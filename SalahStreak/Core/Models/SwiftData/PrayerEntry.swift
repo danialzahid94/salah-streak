@@ -4,10 +4,10 @@ import SwiftData
 @Model
 final class PrayerEntry {
     var id: UUID = UUID()
-    var prayer: PrayerType
-    var scheduledDate: Date
-    var windowStart: Date
-    var windowEnd: Date
+    var prayer: PrayerType = PrayerType.fajr
+    var scheduledDate: Date = Date()
+    var windowStart: Date = Date()
+    var windowEnd: Date = Date()
     var performedAt: Date?
     var status: PrayerStatus = PrayerStatus.pending
     var source: EntrySource = EntrySource.app

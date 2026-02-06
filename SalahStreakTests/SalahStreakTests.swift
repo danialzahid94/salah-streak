@@ -213,7 +213,7 @@ struct StreakServiceTests {
             } else {
                 entry.status = .pending
             }
-            log.entries.append(entry)
+            log.entries?.append(entry)
         }
         return log
     }
@@ -322,7 +322,7 @@ struct DailyLogTests {
             } else {
                 entry.status = .pending
             }
-            log.entries.append(entry)
+            log.entries?.append(entry)
         }
         return log
     }
