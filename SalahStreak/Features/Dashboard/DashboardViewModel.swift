@@ -10,6 +10,8 @@ final class DashboardViewModel {
     var currentStreak: Int = 0
     var completedCount: Int = 0
     var newBadges: [Badge] = []
+    var showQadaSheet: Bool = false
+    var qadaCardIndex: Int? = nil
 
     // MARK: - Private
     private var dailyLog: DailyLog?
@@ -57,6 +59,19 @@ final class DashboardViewModel {
             return
         }
 
+        // Tap on a qada prayer → undo it
+        if card.state == .qada {
+            undoMarkQada(card.prayer)
+            return
+        }
+
+        // Tap on a missed prayer → show qada confirmation dialog
+        if card.state == .missed {
+            qadaCardIndex = cardIndex
+            showQadaSheet = true
+            return
+        }
+
         // Only allow marking done while the prayer window is open
         guard card.state == .active || card.state == .warning else { return }
 
@@ -64,6 +79,30 @@ final class DashboardViewModel {
             entry.status = .done
             entry.performedAt = Date()
             entry.source = .app
+
+            notificationService.cancelNotifications(for: card.prayer, on: Calendar.current.startOfDay(for: Date()))
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        }
+
+        userStats?.totalPrayers += 1
+
+        if let stats = userStats, let log = dailyLog {
+            newBadges = badgeService.checkAndAwardBadges(stats: stats, dailyLog: log)
+        }
+
+        try? modelContext?.save()
+        syncWidgetData()
+        rebuildCards()
+    }
+
+    @MainActor
+    func markPrayerQada(_ cardIndex: Int) {
+        guard cardIndex < prayerCards.count else { return }
+        let card = prayerCards[cardIndex]
+
+        if let entry = dailyLog?.entries.first(where: { $0.prayer == card.prayer }) {
+            entry.status = .qada
+            entry.performedAt = Date()
 
             notificationService.cancelNotifications(for: card.prayer, on: Calendar.current.startOfDay(for: Date()))
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
@@ -92,6 +131,19 @@ final class DashboardViewModel {
             let window = PrayerWindow(prayer: prayer, start: entry.windowStart, end: entry.windowEnd, scheduledTime: entry.scheduledDate)
             notificationService.schedulePrayerNotifications(for: [window], on: Calendar.current.startOfDay(for: Date()))
         }
+
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        try? modelContext?.save()
+        syncWidgetData()
+        rebuildCards()
+    }
+
+    private func undoMarkQada(_ prayer: PrayerType) {
+        guard let entry = dailyLog?.entries.first(where: { $0.prayer == prayer }) else { return }
+
+        entry.status = .missed
+        entry.performedAt = nil
+        userStats?.totalPrayers -= 1
 
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         try? modelContext?.save()
@@ -184,7 +236,8 @@ final class DashboardViewModel {
             switch entry.status {
             case .done:    state = .done
             case .missed:  state = .missed
-            case .pending, .qada:
+            case .qada:    state = .qada
+            case .pending:
                 if now < entry.windowStart {
                     state = .future
                 } else if now > entry.windowEnd {

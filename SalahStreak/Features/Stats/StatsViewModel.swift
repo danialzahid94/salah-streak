@@ -70,6 +70,7 @@ final class StatsViewModel {
                 switch entry.status {
                 case .done:    return .done
                 case .missed:  return .missed
+                case .qada:    return .qada
                 default:       return .upcoming
                 }
             }
@@ -91,7 +92,7 @@ final class StatsViewModel {
     private func computePrayerBreakdown() {
         prayerBreakdown = PrayerType.allCases.map { prayer in
             let count = logs.reduce(0) { sum, log in
-                sum + log.entries.filter { $0.prayer == prayer && $0.status == .done }.count
+                sum + log.entries.filter { $0.prayer == prayer && ($0.status == .done || $0.status == .qada) }.count
             }
             return PrayerBreakdownItem(prayer: prayer, count: count)
         }

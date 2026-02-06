@@ -13,6 +13,9 @@ final class StreakService: StreakServiceProtocol {
             if stats.currentStreak % 7 == 0 {
                 stats.freezesAvailable += 1
             }
+        } else if dailyLog.isStreakSafe {
+            // Qada day: streak survives without consuming a freeze
+            dailyLog.streakProtected = true
         } else {
             if stats.freezesAvailable > 0 {
                 stats.freezesAvailable -= 1

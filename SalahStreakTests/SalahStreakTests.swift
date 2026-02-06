@@ -6,6 +6,7 @@
 //
 
 import Testing
+import Foundation
 @testable import SalahStreak
 
 // MARK: - PrayerTimeService Tests
@@ -147,10 +148,55 @@ struct StreakServiceTests {
         #expect(stats.freezesAvailable == 1)
     }
 
+    // MARK: - Qada Tests
+
+    @Test func qadaDayKeepsStreakWithoutFreeze() {
+        let stats = UserStats()
+        stats.currentStreak = 5
+        stats.freezesAvailable = 0
+
+        let log = makeDailyLog(doneCount: 3, qadaCount: 2)
+        service.processDayEnd(dailyLog: log, stats: stats)
+
+        // Streak survives even with 0 freezes
+        #expect(stats.currentStreak == 5)
+        #expect(log.streakProtected == true)
+    }
+
+    @Test func qadaDayDoesNotIncrementStreak() {
+        let stats = UserStats()
+        stats.currentStreak = 5
+        stats.bestStreak = 5
+
+        let log = makeDailyLog(doneCount: 3, qadaCount: 2)
+        service.processDayEnd(dailyLog: log, stats: stats)
+
+        // Streak stays the same (no increment)
+        #expect(stats.currentStreak == 5)
+        #expect(stats.bestStreak == 5)
+    }
+
+    @Test func qadaDayDoesNotConsumeFreeze() {
+        let stats = UserStats()
+        stats.currentStreak = 5
+        stats.freezesAvailable = 2
+
+        let log = makeDailyLog(doneCount: 3, qadaCount: 2)
+        service.processDayEnd(dailyLog: log, stats: stats)
+
+        // Freezes unchanged
+        #expect(stats.freezesAvailable == 2)
+        #expect(log.streakProtected == true)
+    }
+
     // MARK: - Helpers
 
     /// Creates a DailyLog with the specified number of .done entries (no SwiftData context needed for unit logic).
     private func makeDailyLog(completedCount: Int) -> DailyLog {
+        makeDailyLog(doneCount: completedCount, qadaCount: 0)
+    }
+
+    private func makeDailyLog(doneCount: Int, qadaCount: Int) -> DailyLog {
         let log = DailyLog(date: Calendar.current.startOfDay(for: Date()))
         let allPrayers = PrayerType.allCases
         for (i, prayer) in allPrayers.enumerated() {
@@ -160,7 +206,13 @@ struct StreakServiceTests {
                 windowStart: Date().addingTimeInterval(Double(i) * 3600),
                 windowEnd:   Date().addingTimeInterval(Double(i) * 3600 + 3600)
             )
-            entry.status = i < completedCount ? .done : .pending
+            if i < doneCount {
+                entry.status = .done
+            } else if i < doneCount + qadaCount {
+                entry.status = .qada
+            } else {
+                entry.status = .pending
+            }
             log.entries.append(entry)
         }
         return log
@@ -225,6 +277,54 @@ struct BadgeServiceTests {
 
         // first_prayer already owned — should not be re-awarded
         #expect(!awarded.contains(where: { $0.id == "first_prayer" }))
+    }
+}
+
+// MARK: - DailyLog Tests
+
+struct DailyLogTests {
+
+    @Test func isPerfectExcludesQada() {
+        let log = makeDailyLog(doneCount: 4, qadaCount: 1)
+        #expect(log.isPerfect == false)
+    }
+
+    @Test func isStreakSafeIncludesQada() {
+        let log = makeDailyLog(doneCount: 3, qadaCount: 2)
+        #expect(log.isStreakSafe == true)
+    }
+
+    @Test func completedCountIncludesQada() {
+        let log = makeDailyLog(doneCount: 3, qadaCount: 2)
+        #expect(log.completedCount == 5)
+    }
+
+    @Test func isStreakSafeRequiresAllAccountedFor() {
+        let log = makeDailyLog(doneCount: 3, qadaCount: 1)
+        // 1 prayer still pending → not streak safe
+        #expect(log.isStreakSafe == false)
+    }
+
+    private func makeDailyLog(doneCount: Int, qadaCount: Int) -> DailyLog {
+        let log = DailyLog(date: Calendar.current.startOfDay(for: Date()))
+        let allPrayers = PrayerType.allCases
+        for (i, prayer) in allPrayers.enumerated() {
+            let entry = PrayerEntry(
+                prayer: prayer,
+                scheduledDate: Date(),
+                windowStart: Date().addingTimeInterval(Double(i) * 3600),
+                windowEnd:   Date().addingTimeInterval(Double(i) * 3600 + 3600)
+            )
+            if i < doneCount {
+                entry.status = .done
+            } else if i < doneCount + qadaCount {
+                entry.status = .qada
+            } else {
+                entry.status = .pending
+            }
+            log.entries.append(entry)
+        }
+        return log
     }
 }
 

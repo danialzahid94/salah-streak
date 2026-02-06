@@ -38,6 +38,6 @@ struct WidgetPrayerData: Codable {
     }
 
     var completedCount: Int {
-        prayers.filter { $0.status == "done" }.count
+        prayers.filter { $0.status == "done" || $0.status == "qada" }.count
     }
 }

@@ -1,5 +1,5 @@
 import Foundation
 
 enum PrayerCardState {
-    case future, active, warning, done, missed
+    case future, active, warning, done, missed, qada
 }

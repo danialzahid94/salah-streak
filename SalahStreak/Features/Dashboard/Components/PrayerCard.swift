@@ -39,10 +39,16 @@ struct PrayerCard: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(model.prayer.displayName)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(model.state == .missed ? Theme.stateMissed : .primary)
-            Text(formattedTime)
-                .font(.system(size: 13))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(model.state == .missed ? Theme.stateMissed : model.state == .qada ? Theme.stateQada : .primary)
+            if model.state == .qada {
+                Text("Qaza")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Theme.stateQada)
+            } else {
+                Text(formattedTime)
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 
@@ -55,6 +61,9 @@ struct PrayerCard: View {
             case .missed:
                 Image(systemName: "xmark.circle.fill")
                     .foregroundStyle(Theme.stateMissed)
+            case .qada:
+                Image(systemName: "clock.arrow.circlepath")
+                    .foregroundStyle(Theme.stateQada)
             case .active, .warning:
                 Image(systemName: "circle")
                     .foregroundStyle(stateColor)
@@ -69,7 +78,11 @@ struct PrayerCard: View {
     // MARK: - Helpers
 
     private var cardBackground: some ShapeStyle {
-        model.state == .done ? Color.green.opacity(0.08) : Theme.cardBG
+        switch model.state {
+        case .done: return Color.green.opacity(0.08)
+        case .qada: return Color.yellow.opacity(0.08)
+        default:    return Theme.cardBG
+        }
     }
 
     private var borderColor: Color {
@@ -83,6 +96,7 @@ struct PrayerCard: View {
         case .done:    return Theme.stateDone
         case .missed:  return Theme.stateMissed
         case .future:  return Theme.stateFuture
+        case .qada:    return Theme.stateQada
         }
     }
 

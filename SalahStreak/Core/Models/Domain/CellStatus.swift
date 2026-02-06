@@ -1,5 +1,5 @@
 import Foundation
 
 enum CellStatus {
-    case done, missed, upcoming, noData
+    case done, missed, upcoming, noData, qada
 }

@@ -87,6 +87,7 @@ struct StatsView: View {
             // Legend
             HStack(spacing: 16) {
                 LegendItem(color: Theme.stateDone,    label: "Done")
+                LegendItem(color: Theme.stateQada,    label: "Qaza")
                 LegendItem(color: Theme.stateMissed,  label: "Missed")
                 LegendItem(color: Color(.systemGray4), label: "Upcoming")
                 LegendItem(color: Color(.systemGray6), label: "No data")
@@ -138,6 +139,7 @@ private struct ActivityCell: View {
         switch status {
         case .done:      return Theme.stateDone
         case .missed:    return Theme.stateMissed
+        case .qada:      return Theme.stateQada
         case .upcoming:  return Color(.systemGray4)
         case .noData:    return Color(.systemGray6)
         }

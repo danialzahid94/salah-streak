@@ -30,6 +30,22 @@ struct DashboardView: View {
         .sheet(item: $showBadgeAlert) { badge in
             BadgeUnlockView(badge: badge)
         }
+        .confirmationDialog(
+            "Missed Prayer",
+            isPresented: $viewModel.showQadaSheet,
+            titleVisibility: .visible
+        ) {
+            Button("Mark as Qaza") {
+                if let index = viewModel.qadaCardIndex {
+                    viewModel.markPrayerQada(index)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            if let index = viewModel.qadaCardIndex, index < viewModel.prayerCards.count {
+                Text("Did you perform \(viewModel.prayerCards[index].prayer.displayName) prayer late?")
+            }
+        }
     }
 
     // MARK: - Header

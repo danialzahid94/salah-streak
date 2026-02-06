@@ -108,6 +108,10 @@ private struct MediumWidgetView: View {
                                 Image(systemName: "checkmark")
                                     .foregroundStyle(.green)
                                     .font(.system(size: 12))
+                            } else if p.status == "qada" {
+                                Image(systemName: "clock.arrow.circlepath")
+                                    .foregroundStyle(.yellow)
+                                    .font(.system(size: 12))
                             } else {
                                 Text(shortTime(p.scheduledTime))
                                     .font(.system(size: 13))
@@ -173,6 +177,7 @@ private func statusColor(_ status: String) -> Color {
     case "done":    return .green
     case "missed":  return .red
     case "pending": return .blue
+    case "qada":    return .yellow
     default:        return .gray
     }
 }

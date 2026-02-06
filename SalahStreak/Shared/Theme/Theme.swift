@@ -11,6 +11,7 @@ enum Theme {
     static let stateWarning = Color.orange
     static let stateMissed  = Color.red
     static let stateFuture  = Color.gray
+    static let stateQada   = Color(red: 0.95, green: 0.75, blue: 0.1)
 
     // MARK: - Spacing
     static let spacing: CGFloat      = 16
