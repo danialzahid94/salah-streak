@@ -8,8 +8,8 @@ final class OnboardingViewModel {
     // MARK: - Published State
     var currentStep: Int = 0
     var location: Coordinate?
-    var selectedMadhab: MadhabType = .shafi
-    var selectedCalculationMethod: CalculationMethodType = .muslimWorldLeague
+    var selectedMadhab: MadhabType = .hanafi
+    var selectedCalculationMethod: CalculationMethodType = .northAmerica
     var notificationsEnabled: Bool = false
     
     // MARK: - Private

@@ -28,6 +28,7 @@ struct OnboardingContainerView: View {
                     })
                 default:
                     GoalSelectionView(onFinish: { notificationsEnabled in
+                        viewModel.notificationsEnabled = notificationsEnabled
                         Task {
                             await viewModel.finishOnboarding()
                         }

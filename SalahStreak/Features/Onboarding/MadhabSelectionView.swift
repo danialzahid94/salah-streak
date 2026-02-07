@@ -3,7 +3,7 @@ import SwiftUI
 struct MadhabSelectionView: View {
     let onNext: (MadhabType) -> Void
 
-    @State private var selected: MadhabType = .shafi
+    @State private var selected: MadhabType = .hanafi
 
     var body: some View {
         VStack(spacing: Theme.spacingLarge) {
